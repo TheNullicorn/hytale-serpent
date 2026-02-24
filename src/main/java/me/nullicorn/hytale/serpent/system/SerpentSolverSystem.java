@@ -74,7 +74,7 @@ public final class SerpentSolverSystem extends EntityTickingSystem<EntityStore> 
                 if (i < serpent.joints.length - 1) {
                     final Vector3d dirIn = predictions[i].clone().subtract(predictions[i - 1]).normalize();
                     final Vector3d dirOut = predictions[i + 1].clone().subtract(predictions[i]).normalize();
-                    final double angleLimit = Math.toRadians(20);
+                    final double angleLimit = Math.toRadians(serpent.config.getDefaultSoftAngleLimit());
                     final double angleBetween = getAngleBetween(dirIn, dirOut);
                     if (angleBetween > angleLimit) {
                         final Vector3d perp = dirIn.cross(dirOut);

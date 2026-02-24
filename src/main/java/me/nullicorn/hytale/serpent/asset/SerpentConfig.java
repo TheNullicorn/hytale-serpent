@@ -63,7 +63,7 @@ public final class SerpentConfig implements JsonAssetWithMap<String, DefaultAsse
         .addValidator(IntRangeBoundValidator.lowerBound(0, null, true))
         .add()
         .appendInherited(
-            new KeyedCodec<>("DefaultHardDampingSpeed", Codec.DOUBLE, false),
+            new KeyedCodec<>("DefaultHardDampingSpeed", Codec.DOUBLE, true),
             (serpentConfig, s) -> serpentConfig.defaultHardDampingSpeed = s,
             (serpentConfig) -> serpentConfig.defaultHardDampingSpeed,
             (serpentConfig, parent) -> serpentConfig.defaultHardDampingSpeed = parent.defaultHardDampingSpeed
@@ -73,7 +73,7 @@ public final class SerpentConfig implements JsonAssetWithMap<String, DefaultAsse
         .addValidator(Validators.min(0.0d))
         .add()
         .appendInherited(
-            new KeyedCodec<>("DefaultSoftDampingSpeed", Codec.DOUBLE, false),
+            new KeyedCodec<>("DefaultSoftDampingSpeed", Codec.DOUBLE, true),
             (serpentConfig, s) -> serpentConfig.defaultSoftDampingSpeed = s,
             (serpentConfig) -> serpentConfig.defaultSoftDampingSpeed,
             (serpentConfig, parent) -> serpentConfig.defaultSoftDampingSpeed = parent.defaultSoftDampingSpeed
@@ -90,6 +90,15 @@ public final class SerpentConfig implements JsonAssetWithMap<String, DefaultAsse
         )
         .documentation("Multiplied by a joint's speed if it exceeds **SoftDampingSpeed**")
         .addValidator(Validators.range(0.0d, 1.0d))
+        .add()
+        .appendInherited(
+            new KeyedCodec<>("DefaultSoftAngleLimit", Codec.DOUBLE, true),
+            (serpentConfig, s) -> serpentConfig.defaultSoftAngleLimit = s,
+            (serpentConfig) -> serpentConfig.defaultSoftAngleLimit,
+            (serpentConfig, parent) -> serpentConfig.defaultSoftAngleLimit = parent.defaultSoftAngleLimit
+        )
+        .addValidator(Validators.nonNull())
+        .addValidator(Validators.range(0.0, 180.0))
         .add()
         .afterDecode(serpentConfig -> {
             serpentConfig.head = SerpentSegmentConfig.getAssetMap().getAsset(serpentConfig.headAssetId);
@@ -115,6 +124,7 @@ public final class SerpentConfig implements JsonAssetWithMap<String, DefaultAsse
     private double defaultHardDampingSpeed;
     private double defaultSoftDampingSpeed;
     private double defaultSoftDampingCoefficient;
+    private double defaultSoftAngleLimit;
 
     private SerpentSegmentConfig head;
     private SerpentSegmentConfig body;
@@ -162,5 +172,9 @@ public final class SerpentConfig implements JsonAssetWithMap<String, DefaultAsse
 
     public double getDefaultSoftDampingCoefficient() {
         return this.defaultSoftDampingCoefficient;
+    }
+
+    public double getDefaultSoftAngleLimit() {
+        return this.defaultSoftAngleLimit;
     }
 }
