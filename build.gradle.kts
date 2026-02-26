@@ -5,7 +5,7 @@ plugins {
 group = "me.nullicorn"
 version = "1.0.0-SNAPSHOT"
 
-val serverVersion = "2026.02.19-ad6f58ec8"
+val serverVersion = "2026.02.26-799128e82"
 
 repositories {
     mavenCentral()
