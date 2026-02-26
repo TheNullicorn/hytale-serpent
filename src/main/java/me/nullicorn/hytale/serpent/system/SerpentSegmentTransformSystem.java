@@ -64,9 +64,12 @@ public final class SerpentSegmentTransformSystem extends EntityTickingSystem<Ent
         final Vector3d direction = serpent.joints[serpentSegment.index].position.clone().subtract(serpent.joints[serpentSegment.index + 1].position).normalize();
         final Vector3f rotation = new Vector3f();
 
+        final double length = serpent.getSegmentLength(serpentSegment.index);
+        final Vector3d offset = direction.clone().scale(length / 2.0);
+
         rotation.setPitch((float) Math.asin(direction.y));
         rotation.setYaw((float) (Math.atan2(direction.x, direction.z) + Math.PI));
         transform.setRotation(rotation);
-        transform.setPosition(serpent.joints[serpentSegment.index + 1].position.clone().add(direction.clone().scale(serpent.lengths[serpentSegment.index] / 2.0)));
+        transform.setPosition(serpent.joints[serpentSegment.index + 1].position.clone().add(offset));
     }
 }

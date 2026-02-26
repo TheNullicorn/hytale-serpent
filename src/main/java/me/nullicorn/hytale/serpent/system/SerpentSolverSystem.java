@@ -66,7 +66,7 @@ public final class SerpentSolverSystem extends EntityTickingSystem<EntityStore> 
 
         for (int i = 1; i < serpent.joints.length; i++) {
             // Get how long this segment is intended to be.
-            final double length = serpent.lengths[i - 1];
+            final double length = serpent.getSegmentLength(i - 1);
             if (length == 0.0) {
                 predictions[i] = predictions[i - 1].clone();
             } else {

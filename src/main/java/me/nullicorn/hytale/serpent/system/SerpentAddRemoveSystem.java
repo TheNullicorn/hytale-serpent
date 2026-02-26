@@ -38,7 +38,7 @@ public final class SerpentAddRemoveSystem extends RefSystem<EntityStore> {
         final Model tailModel = Model.createUnitScaleModel(serpent.config.getTail().getModel());
 
         //noinspection unchecked
-        serpent.segments = new Ref[serpent.lengths.length];
+        serpent.segments = new Ref[serpent.joints.length - 1];
 
         for (int i = 0; i < serpent.segments.length; i++) {
             final TransformComponent transform = new TransformComponent(serpent.joints[i + 1].position.clone(), new Vector3f());

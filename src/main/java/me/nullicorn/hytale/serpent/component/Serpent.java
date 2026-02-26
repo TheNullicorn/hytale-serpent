@@ -16,7 +16,6 @@ public final class Serpent implements Component<EntityStore> {
     public SerpentConfig config;
     public Vector3d target;
     public Joint[] joints;
-    public double[] lengths;
     public Ref<EntityStore>[] segments;
 
     public static ComponentType<EntityStore, Serpent> getComponentType() {
@@ -37,14 +36,23 @@ public final class Serpent implements Component<EntityStore> {
             joint.position = joints[i].clone();
             this.joints[i] = joint;
         }
-
-        this.lengths = new double[this.joints.length - 1];
-        for (int i = 0; i < this.lengths.length; i++) {
-            this.lengths[i] = joints[i].distanceTo(joints[i + 1]);
-        }
         this.target = joints[0].clone();
         //noinspection unchecked
         this.segments = new Ref[this.joints.length - 1];
+    }
+
+    public double getSegmentLength(final int index) {
+        if (index < 0 || index >= this.joints.length) {
+            throw new IndexOutOfBoundsException(index);
+        }
+
+        if (index == 0) {
+            return this.config.getHead().getLength();
+        }
+        if (index < this.joints.length - 1) {
+            return this.config.getBody().getLength();
+        }
+        return this.config.getTail().getLength();
     }
 
     @Override
