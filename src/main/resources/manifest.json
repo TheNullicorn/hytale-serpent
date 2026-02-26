@@ -12,6 +12,6 @@
     "Dependencies": {
         "Hytale:EntityModule": "*"
     },
-    "ServerVersion": "2026.02.26-799128e82",
+    "ServerVersion": "2026.02.26-7681d338c",
     "Main": "me.nullicorn.hytale.serpent.SerpentPlugin"
 }
