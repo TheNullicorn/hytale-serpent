@@ -6,8 +6,8 @@
     40,
     80
   ],
-  "DefaultHardDampingSpeed": 10.0,
-  "DefaultSoftDampingSpeed": 5.0,
-  "DefaultSoftDampingCoefficient": 0.95,
+  "DefaultHardDampingSpeed": 0.0,
+  "DefaultSoftDampingSpeed": 0.0,
+  "DefaultSoftDampingCoefficient": 0.0,
   "DefaultSoftAngleLimit": 20
 }
