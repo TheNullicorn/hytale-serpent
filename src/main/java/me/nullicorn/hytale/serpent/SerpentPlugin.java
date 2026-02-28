@@ -52,11 +52,18 @@ public final class SerpentPlugin extends JavaPlugin {
         this.serpentComponentType = this.getEntityStoreRegistry().registerComponent(Serpent.class, Serpent.ID, Serpent.CODEC);
         this.serpentSegmentComponentType = this.getEntityStoreRegistry().registerComponent(SerpentSegment.class, SerpentSegment::new);
 
-        this.getEntityStoreRegistry().registerSystem(new SerpentNetworkIdSystem());
-        this.getEntityStoreRegistry().registerSystem(new SerpentAddRemoveSystem());
+        // Systems for initializing `Serpent` entities.
+        this.getEntityStoreRegistry().registerSystem(new SerpentInitSystems.PreSpawnSystem());
+        this.getEntityStoreRegistry().registerSystem(new SerpentInitSystems.SpawnSystem());
+        this.getEntityStoreRegistry().registerSystem(new SerpentInitSystems.ChangeSystem());
+
+        // Systems for controlling `Serpent` internal states.
         this.getEntityStoreRegistry().registerSystem(new SerpentTargetSystem());
         this.getEntityStoreRegistry().registerSystem(new SerpentSolverSystem());
-        this.getEntityStoreRegistry().registerSystem(new SerpentSegmentTransformSystem());
+
+        // Systems for managing `SerpentSegment` transforms and lifetimes.
+        this.getEntityStoreRegistry().registerSystem(new SerpentSegmentLoadAndTransformSystem());
+        this.getEntityStoreRegistry().registerSystem(new SerpentSegmentUnloadSystem());
 
         this.getCommandRegistry().registerCommand(new SerpentCommand());
     }

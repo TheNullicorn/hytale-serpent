@@ -85,6 +85,7 @@ public final class SerpentAddCommand extends AbstractPlayerCommand {
 
         final Holder<EntityStore> holder = store.getRegistry().newHolder();
         holder.addComponent(Serpent.getComponentType(), new Serpent(joints, config));
+        holder.addComponent(NetworkId.getComponentType(), new NetworkId(store.getExternalData().takeNextNetworkId()));
         holder.addComponent(UUIDComponent.getComponentType(), UUIDComponent.randomUUID());
         store.addEntity(holder, AddReason.SPAWN);
     }

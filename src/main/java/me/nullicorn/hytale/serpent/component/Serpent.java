@@ -8,10 +8,13 @@ import com.hypixel.hytale.codec.validation.Validators;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.math.vector.Transform;
 import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.nullicorn.hytale.serpent.SerpentPlugin;
 import me.nullicorn.hytale.serpent.asset.SerpentConfig;
+import me.nullicorn.hytale.serpent.asset.SerpentSegmentConfig;
 
 public final class Serpent implements Component<EntityStore> {
     public static final String ID = "Serpent";
@@ -74,18 +77,35 @@ public final class Serpent implements Component<EntityStore> {
         this.segments = new Ref[this.joints.length - 1];
     }
 
-    public double getSegmentLength(final int index) {
-        if (index < 0 || index >= this.joints.length) {
+    public SerpentSegmentConfig getSegmentConfig(final int index) {
+        if (index < 0 || index >= this.segments.length) {
+            throw new IndexOutOfBoundsException(index);
+        }
+        if (index == 0) {
+            return this.config.getHead();
+        }
+        if (index < this.segments.length - 1) {
+            return this.config.getBody();
+        }
+        return this.config.getTail();
+    }
+
+    public Transform getSegmentTransform(final int index) {
+        if (index < 0 || index >= this.segments.length) {
             throw new IndexOutOfBoundsException(index);
         }
 
-        if (index == 0) {
-            return this.config.getHead().getLength();
-        }
-        if (index < this.joints.length - 1) {
-            return this.config.getBody().getLength();
-        }
-        return this.config.getTail().getLength();
+        final Vector3d direction = this.joints[index].position.clone().subtract(this.joints[index + 1].position).normalize();
+        final double length = this.getSegmentConfig(index).getLength();
+
+        final Vector3d offset = direction.clone().scale(length / 2.0);
+        final Vector3d position = this.joints[index + 1].position.clone().add(offset);
+
+        final Vector3f rotation = new Vector3f();
+        rotation.setPitch((float) Math.asin(direction.y));
+        rotation.setYaw((float) (Math.atan2(direction.x, direction.z) + Math.PI));
+
+        return new Transform(position, rotation);
     }
 
     @Override

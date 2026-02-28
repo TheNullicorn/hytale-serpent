@@ -4,9 +4,6 @@ import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.component.dependency.Dependency;
-import com.hypixel.hytale.component.dependency.Order;
-import com.hypixel.hytale.component.dependency.SystemDependency;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.math.vector.Vector3d;
@@ -19,19 +16,9 @@ import me.nullicorn.hytale.serpent.component.SerpentSegment;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-public class SerpentTargetSystem extends EntityTickingSystem<EntityStore> {
-    @Nonnull
-    @Override
-    public Set<Dependency<EntityStore>> getDependencies() {
-        return Collections.singleton(
-            new SystemDependency<>(Order.AFTER, SerpentAddRemoveSystem.class)
-        );
-    }
-
+public final class SerpentTargetSystem extends EntityTickingSystem<EntityStore> {
     @Nullable
     @Override
     public Query<EntityStore> getQuery() {
