@@ -77,6 +77,15 @@ public final class Serpent implements Component<EntityStore> {
         this.bones = new Ref[this.joints.length - 1];
     }
 
+    public SerpentConfig getConfig() {
+        return this.config;
+    }
+
+    public void setConfig(final SerpentConfig config) {
+        this.config = config;
+        this.configAssetId = this.config.getId();
+    }
+
     public SerpentBoneConfig getBoneConfig(final int index) {
         if (index < 0 || index >= this.bones.length) {
             throw new IndexOutOfBoundsException(index);
@@ -120,10 +129,6 @@ public final class Serpent implements Component<EntityStore> {
             clone.joints[i] = this.joints[i].clone();
         }
         return clone;
-    }
-
-    public SerpentConfig getConfig() {
-        return this.config;
     }
 
     public static final class Joint implements Cloneable {
