@@ -13,8 +13,11 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.nullicorn.hytale.serpent.SerpentPlugin;
-import me.nullicorn.hytale.serpent.asset.SerpentConfig;
 import me.nullicorn.hytale.serpent.asset.SerpentBoneConfig;
+import me.nullicorn.hytale.serpent.asset.SerpentConfig;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Serpent implements Component<EntityStore> {
     public static final String ID = "Serpent";
@@ -44,6 +47,7 @@ public final class Serpent implements Component<EntityStore> {
         .afterDecode(serpent -> {
             serpent.config = SerpentConfig.getAssetMap().getAsset(serpent.configAssetId);
             assert serpent.config != null;
+            serpent.resetPath();
         })
         .build();
 
@@ -53,6 +57,7 @@ public final class Serpent implements Component<EntityStore> {
     private SerpentConfig config;
     public Ref<EntityStore>[] bones;
     public Vector3d target;
+    public List<Vector3d> path = new ArrayList<>();
 
     public static ComponentType<EntityStore, Serpent> getComponentType() {
         return SerpentPlugin.get().getSerpentComponentType();
@@ -75,6 +80,8 @@ public final class Serpent implements Component<EntityStore> {
         }
         this.target = joints[0].clone();
         this.bones = new Ref[this.joints.length - 1];
+
+        this.resetPath();
     }
 
     public SerpentConfig getConfig() {
@@ -128,7 +135,18 @@ public final class Serpent implements Component<EntityStore> {
         for (int i = 0; i < this.joints.length; i++) {
             clone.joints[i] = this.joints[i].clone();
         }
+        clone.resetPath();
         return clone;
+    }
+
+    private void resetPath() {
+        if (this.joints == null) {
+            return;
+        }
+        this.path.clear();
+        for (final Joint joint : this.joints) {
+            this.path.add(joint.position.clone());
+        }
     }
 
     public static final class Joint implements Cloneable {
