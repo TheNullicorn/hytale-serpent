@@ -76,7 +76,7 @@ public final class SerpentAddCommand extends AbstractPlayerCommand {
             joints[i] = playerRef.getTransform().getPosition().clone().add(0, 0, -distance);
             if (i == 0) {
                 distance += config.getHead().getLength();
-            } else if (i < joints.length - 1) {
+            } else if (i < joints.length - 2) {
                 distance += config.getBody().getLength();
             } else {
                 distance += config.getTail().getLength();
