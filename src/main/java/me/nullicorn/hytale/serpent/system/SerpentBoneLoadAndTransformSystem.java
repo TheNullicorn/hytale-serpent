@@ -68,6 +68,11 @@ public final class SerpentBoneLoadAndTransformSystem extends EntityTickingSystem
             }
             final Transform transform = serpent.getBoneTransform(i);
 
+            if (transform.getPosition().y < -32) {
+                // Don't spawn the bone if it's below the world. See UpdateLocationSystems#updateLocation for reference.
+                continue;
+            }
+
             final long chunkIndex = ChunkUtil.indexChunkFromBlock(transform.getPosition().x, transform.getPosition().z);
             final WorldChunk chunk = store.getExternalData().getWorld().getChunkIfLoaded(chunkIndex);
             if (chunk == null) {
