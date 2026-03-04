@@ -55,41 +55,51 @@ public final class SerpentBoneLoadAndTransformSystem extends EntityTickingSystem
         final Serpent serpent = archetypeChunk.getComponent(index, Serpent.getComponentType());
         assert serpent != null;
 
-        for (int i = 0; i < serpent.bones.length; i++) {
-            final Ref<EntityStore> boneRef = serpent.bones[i];
+        for (int boneIndex = 0; boneIndex < serpent.bones.length; boneIndex++) {
+            final Ref<EntityStore> boneRef = serpent.bones[boneIndex];
             if (boneRef != null && boneRef.isValid()) {
                 final TransformComponent transform = commandBuffer.getComponent(boneRef, TransformComponent.getComponentType());
                 if (transform != null) {
-                    final Transform newTransform = serpent.getBoneTransform(i);
+                    final Transform newTransform = serpent.getBoneTransform(boneIndex);
                     transform.setPosition(newTransform.getPosition());
                     transform.setRotation(newTransform.getRotation());
                 }
                 continue;
             }
-            final Transform transform = serpent.getBoneTransform(i);
 
-            if (transform.getPosition().y < -32) {
+            final Transform boneTransform = serpent.getBoneTransform(boneIndex);
+            if (boneTransform.getPosition().y < -32) {
                 // Don't spawn the bone if it's below the world. See UpdateLocationSystems#updateLocation for reference.
                 continue;
             }
 
-            final long chunkIndex = ChunkUtil.indexChunkFromBlock(transform.getPosition().x, transform.getPosition().z);
+            final long chunkIndex = ChunkUtil.indexChunkFromBlock(boneTransform.getPosition().x, boneTransform.getPosition().z);
             final WorldChunk chunk = store.getExternalData().getWorld().getChunkIfLoaded(chunkIndex);
             if (chunk == null) {
                 // Don't spawn the bone if it's in an unloaded chunk.
                 continue;
             }
 
-            final Model model = Model.createUnitScaleModel(serpent.getBoneConfig(i).getModel());
-            final Holder<EntityStore> holder = store.getRegistry().newHolder();
-            holder.addComponent(SerpentBone.getComponentType(), new SerpentBone(serpentRef, i));
-            holder.addComponent(NetworkId.getComponentType(), new NetworkId(store.getExternalData().takeNextNetworkId()));
-            holder.addComponent(UUIDComponent.getComponentType(), UUIDComponent.randomUUID());
-            holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(transform.getPosition(), transform.getRotation()));
-            holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(model));
-            holder.addComponent(store.getRegistry().getNonSerializedComponentType(), NonSerialized.get());
-            // Spawn the bone and store its `Ref` inside the `Serpent`.
-            serpent.bones[i] = commandBuffer.addEntity(holder, AddReason.LOAD);
+            spawnBone(boneIndex, boneTransform, serpent, serpentRef, commandBuffer);
         }
+    }
+
+    private static void spawnBone(
+        final int boneIndex,
+        final Transform boneTransform,
+        final Serpent serpent,
+        final Ref<EntityStore> serpentRef,
+        final ComponentAccessor<EntityStore> componentAccessor
+    ) {
+        final Model model = Model.createUnitScaleModel(serpent.getBoneConfig(boneIndex).getModel());
+        final Holder<EntityStore> holder = componentAccessor.getExternalData().getStore().getRegistry().newHolder();
+        holder.addComponent(SerpentBone.getComponentType(), new SerpentBone(serpentRef, boneIndex));
+        holder.addComponent(NetworkId.getComponentType(), new NetworkId(componentAccessor.getExternalData().takeNextNetworkId()));
+        holder.addComponent(UUIDComponent.getComponentType(), UUIDComponent.randomUUID());
+        holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(boneTransform.getPosition(), boneTransform.getRotation()));
+        holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(model));
+        holder.addComponent(componentAccessor.getExternalData().getStore().getRegistry().getNonSerializedComponentType(), NonSerialized.get());
+        // Spawn the bone and store its `Ref` inside the `Serpent`.
+        serpent.bones[boneIndex] = componentAccessor.addEntity(holder, AddReason.LOAD);
     }
 }
