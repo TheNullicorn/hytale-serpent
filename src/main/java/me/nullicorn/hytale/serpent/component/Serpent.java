@@ -69,6 +69,7 @@ public final class Serpent implements Component<EntityStore> {
             throw new IllegalArgumentException("joints must have at least 2 elements");
         }
         this.config = config;
+        this.configAssetId = this.config.getId();
         this.joints = new Joint[joints.length];
         for (int i = 0; i < joints.length; i++) {
             final Joint joint = new Joint();
