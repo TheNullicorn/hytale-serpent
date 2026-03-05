@@ -13,6 +13,8 @@ import com.hypixel.hytale.codec.validation.ValidatorCache;
 import com.hypixel.hytale.codec.validation.Validators;
 import com.hypixel.hytale.math.range.IntRange;
 import com.hypixel.hytale.math.range.IntRangeBoundValidator;
+import com.hypixel.hytale.server.core.command.system.arguments.types.AssetArgumentType;
+import com.hypixel.hytale.server.core.command.system.arguments.types.SingleArgumentType;
 
 public final class SerpentConfig implements JsonAssetWithMap<String, DefaultAssetMap<String, SerpentConfig>> {
     public static final String PATH = "NPC/SerpentConfig";
@@ -111,6 +113,10 @@ public final class SerpentConfig implements JsonAssetWithMap<String, DefaultAsse
         new ValidatorCache<>(new AssetKeyValidator<>(SerpentConfig::getAssetStore));
 
     private static AssetStore<String, SerpentConfig, DefaultAssetMap<String, SerpentConfig>> ASSET_STORE;
+
+    public static final SingleArgumentType<SerpentConfig> SINGLE_ARGUMENT_TYPE = new AssetArgumentType<>(
+        "server.commands.parsing.argtype.asset.serpent-config.name", SerpentConfig.class, "server.commands.parsing.argtype.asset.serpent-config.usage"
+    );
 
     private String id;
     private AssetExtraInfo.Data extraData;

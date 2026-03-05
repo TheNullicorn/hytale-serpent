@@ -12,5 +12,12 @@
       "Y": 0.75,
       "Z": 0.75
     }
+  },
+  "EyeHeight": 0.25,
+  "Camera": {
+    "PositionOffset": {
+      "Y": 5,
+      "Z": 10
+    }
   }
 }

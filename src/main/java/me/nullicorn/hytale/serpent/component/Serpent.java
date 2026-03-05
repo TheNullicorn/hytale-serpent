@@ -37,7 +37,6 @@ public final class Serpent implements Component<EntityStore> {
             (serpent, s) -> {
                 serpent.joints = s;
                 serpent.bones = new Ref[serpent.joints.length - 1];
-                serpent.target = serpent.joints[0].position;
             },
             (serpent) -> serpent.joints
         )
@@ -55,7 +54,6 @@ public final class Serpent implements Component<EntityStore> {
 
     private SerpentConfig config;
     public Ref<EntityStore>[] bones;
-    public Vector3d target;
     public List<Vector3d> path = new ArrayList<>();
 
     public static ComponentType<EntityStore, Serpent> getComponentType() {
@@ -77,7 +75,6 @@ public final class Serpent implements Component<EntityStore> {
             joint.position.assign(joints[i]);
             this.joints[i] = joint;
         }
-        this.target = joints[0].clone();
         this.bones = new Ref[this.joints.length - 1];
 
         this.resetPath();

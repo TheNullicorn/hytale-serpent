@@ -1,7 +1,5 @@
 package me.nullicorn.hytale.serpent.command;
 
-import com.hypixel.hytale.component.AddReason;
-import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.random.RandomExtra;
@@ -12,11 +10,7 @@ import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
-import com.hypixel.hytale.server.core.command.system.arguments.types.AssetArgumentType;
-import com.hypixel.hytale.server.core.command.system.arguments.types.SingleArgumentType;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
-import com.hypixel.hytale.server.core.entity.UUIDComponent;
-import com.hypixel.hytale.server.core.modules.entity.tracker.NetworkId;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -26,7 +20,7 @@ import me.nullicorn.hytale.serpent.component.Serpent;
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
-public final class SerpentAddCommand extends AbstractPlayerCommand {
+public final class SerpentMorphCommand extends AbstractPlayerCommand {
     private final RequiredArg<SerpentConfig> serpentConfigArg =
         this.withRequiredArg(
             "config",
@@ -41,8 +35,9 @@ public final class SerpentAddCommand extends AbstractPlayerCommand {
             ArgTypes.INTEGER
         );
 
-    public SerpentAddCommand() {
-        super("add", "server.commands.serpent.add.desc");
+    public SerpentMorphCommand() {
+        super("morph", "server.commands.serpent.morph.desc");
+        this.addSubCommand(new SerpentMorphResetCommand());
     }
 
     @Override
@@ -53,7 +48,7 @@ public final class SerpentAddCommand extends AbstractPlayerCommand {
         @Nonnull final PlayerRef playerRef,
         @Nonnull final World world
     ) {
-        // TODO: Almost identical to SerpentMorphCommand. Move this shared code elsewhere.
+        // TODO: Almost identical to SerpentAddCommand. Move this shared code elsewhere.
         final SerpentConfig config = context.get(this.serpentConfigArg);
 
         final int boneCount = Objects.requireNonNullElseGet(
@@ -80,10 +75,6 @@ public final class SerpentAddCommand extends AbstractPlayerCommand {
             }
         }
 
-        final Holder<EntityStore> holder = store.getRegistry().newHolder();
-        holder.addComponent(Serpent.getComponentType(), new Serpent(joints, config));
-        holder.addComponent(NetworkId.getComponentType(), new NetworkId(store.getExternalData().takeNextNetworkId()));
-        holder.addComponent(UUIDComponent.getComponentType(), UUIDComponent.randomUUID());
-        store.addEntity(holder, AddReason.SPAWN);
+        store.putComponent(ref, Serpent.getComponentType(), new Serpent(joints, config));
     }
 }

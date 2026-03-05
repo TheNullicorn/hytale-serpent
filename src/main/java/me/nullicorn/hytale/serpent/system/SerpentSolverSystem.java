@@ -3,29 +3,18 @@ package me.nullicorn.hytale.serpent.system;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.component.dependency.Dependency;
-import com.hypixel.hytale.component.dependency.Order;
-import com.hypixel.hytale.component.dependency.SystemDependency;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.nullicorn.hytale.serpent.component.Serpent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.Set;
 
 public final class SerpentSolverSystem extends EntityTickingSystem<EntityStore> {
-    @Nonnull
-    @Override
-    public Set<Dependency<EntityStore>> getDependencies() {
-        return Collections.singleton(
-            new SystemDependency<>(Order.AFTER, SerpentTargetSystem.class)
-        );
-    }
-
     @Nullable
     @Override
     public Query<EntityStore> getQuery() {
@@ -43,15 +32,30 @@ public final class SerpentSolverSystem extends EntityTickingSystem<EntityStore> 
         final Serpent serpent = archetypeChunk.getComponent(index, Serpent.getComponentType());
         assert serpent != null;
 
-        if (serpent.joints == null || serpent.joints.length < 2 || serpent.target == null) {
+        if (serpent.joints == null || serpent.joints.length < 2) {
             return;
         }
 
-        if (serpent.joints[0].position.distanceTo(serpent.target) < 0.00001) {
+        // Stored so we can check if the neck moved substantially. If it didn't we'll exit early.
+        final Vector3d oldNeckPosition = serpent.joints[1].position.clone();
+
+        final TransformComponent headTransform = archetypeChunk.getComponent(index, TransformComponent.getComponentType());
+        final HeadRotation headRotation = archetypeChunk.getComponent(index, HeadRotation.getComponentType());
+        if (headTransform != null && headRotation != null) {
+            final Vector3d offset = headRotation.getDirection().scale(serpent.getBoneConfig(0).getLength() / 2);
+            // Move the first joint to the front of the head.
+            serpent.joints[0].position.assign(headTransform.getPosition().clone().add(offset));
+            // Move the second joint to the rear of the head.
+            serpent.joints[1].position.assign(headTransform.getPosition().clone().subtract(offset));
+        }
+
+        if (serpent.joints[1].position.distanceTo(oldNeckPosition) < 0.00001) {
+            // The neck barely moved, so don't bother moving bones.
             return;
         }
-        serpent.joints[0].position.assign(serpent.target);
-        serpent.path.addFirst(serpent.target.clone());
+
+        // Add the new neck position to the front of the path.
+        serpent.path.addFirst(serpent.joints[1].position.clone());
 
         // FIXME: When bones move backward (when the head backtracks) bones that reach the tail get compressed into its
         //        position. Implement some form of extrapolation on `path` so that the tail bone can go backward.
@@ -59,7 +63,8 @@ public final class SerpentSolverSystem extends EntityTickingSystem<EntityStore> 
         int pathIndex = 0;
         double remainder = 0.0;
 
-        for (int i = 1; i < serpent.joints.length; i++) {
+        // `i = 2` because we want to start at the first joint after the neck.
+        for (int i = 2; i < serpent.joints.length; i++) {
             final double boneLength = serpent.getBoneConfig(i - 1).getLength();
 
             // Account for how far along the path segment the previous joint left off.

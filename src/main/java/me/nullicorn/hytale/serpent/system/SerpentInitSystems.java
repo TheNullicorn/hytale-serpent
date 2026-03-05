@@ -8,8 +8,11 @@ import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.math.vector.Transform;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
+import com.hypixel.hytale.server.core.cosmetics.CosmeticsModule;
+import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.entity.player.PlayerSkinComponent;
 import com.hypixel.hytale.server.core.modules.entity.tracker.NetworkId;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.nullicorn.hytale.serpent.component.Serpent;
@@ -54,6 +57,10 @@ public final class SerpentInitSystems {
 
             if (holder.getComponent(NetworkId.getComponentType()) == null) {
                 holder.addComponent(NetworkId.getComponentType(), new NetworkId(store.getExternalData().takeNextNetworkId()));
+            }
+
+            if (holder.getComponent(HeadRotation.getComponentType()) == null) {
+                holder.addComponent(HeadRotation.getComponentType(), new HeadRotation());
             }
 
             final Transform headTransform = serpent.getBoneTransform(0);
@@ -159,7 +166,23 @@ public final class SerpentInitSystems {
             @Nonnull final Store<EntityStore> store,
             @Nonnull final CommandBuffer<EntityStore> commandBuffer
         ) {
-            // N/A
+            final PlayerSkinComponent playerSkinComponent = commandBuffer.getComponent(ref, PlayerSkinComponent.getComponentType());
+            if (playerSkinComponent == null) {
+                // This entity probably isn't a player.
+                return;
+            }
+
+            // Schedule the skin to be resynced with clients.
+            playerSkinComponent.setNetworkOutdated();
+
+            // Validate the skin and make a player model for it.
+            final Model playerModel = CosmeticsModule.get().createModel(playerSkinComponent.getPlayerSkin());
+            if (playerModel == null) {
+                return;
+            }
+
+            // Assign the new model to the player.
+            commandBuffer.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(playerModel));
         }
     }
 }

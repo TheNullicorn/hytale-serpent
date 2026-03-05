@@ -6,5 +6,6 @@ public final class SerpentCommand extends AbstractCommandCollection {
     public SerpentCommand() {
         super("serpent", "server.commands.serpent.desc");
         this.addSubCommand(new SerpentAddCommand());
+        this.addSubCommand(new SerpentMorphCommand());
     }
 }

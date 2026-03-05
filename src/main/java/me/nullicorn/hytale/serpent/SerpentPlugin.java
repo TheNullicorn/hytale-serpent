@@ -18,7 +18,10 @@ import me.nullicorn.hytale.serpent.asset.SerpentConfig;
 import me.nullicorn.hytale.serpent.command.SerpentCommand;
 import me.nullicorn.hytale.serpent.component.Serpent;
 import me.nullicorn.hytale.serpent.component.SerpentBone;
-import me.nullicorn.hytale.serpent.system.*;
+import me.nullicorn.hytale.serpent.system.SerpentBoneLoadAndTransformSystem;
+import me.nullicorn.hytale.serpent.system.SerpentBoneUnloadSystem;
+import me.nullicorn.hytale.serpent.system.SerpentInitSystems;
+import me.nullicorn.hytale.serpent.system.SerpentSolverSystem;
 
 import javax.annotation.Nonnull;
 
@@ -64,7 +67,6 @@ public final class SerpentPlugin extends JavaPlugin {
         this.getEntityStoreRegistry().registerSystem(new SerpentInitSystems.ChangeSystem());
 
         // Systems for controlling `Serpent` internal states.
-        this.getEntityStoreRegistry().registerSystem(new SerpentTargetSystem());
         this.getEntityStoreRegistry().registerSystem(new SerpentSolverSystem());
 
         // Systems for managing `SerpentBone` transforms and lifetimes.

@@ -61,7 +61,10 @@ public final class SerpentBoneLoadAndTransformSystem extends EntityTickingSystem
             final Transform boneTransform = serpent.getBoneTransform(boneIndex);
 
             if (boneRef != null && boneRef.isValid()) {
-                moveBone(boneIndex, boneRef, boneTransform, commandBuffer);
+                // Only move bones after the head. The head has control over itself.
+                if (boneIndex > 0) {
+                    moveBone(boneIndex, boneRef, boneTransform, commandBuffer);
+                }
                 continue;
             }
 
