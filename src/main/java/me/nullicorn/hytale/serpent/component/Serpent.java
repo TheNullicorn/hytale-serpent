@@ -155,23 +155,14 @@ public final class Serpent implements Component<EntityStore> {
             )
             .addValidator(Validators.nonNull())
             .add()
-            .append(
-                new KeyedCodec<>("Velocity", Vector3d.CODEC, false),
-                (joint, s) -> joint.velocity.assign(s),
-                (joint) -> joint.velocity
-            )
-            .addValidator(Validators.nonNull())
-            .add()
             .build();
 
         public final Vector3d position = new Vector3d();
-        public final Vector3d velocity = new Vector3d();
 
         @Override
         protected Joint clone() {
             final Joint clone = new Joint();
             clone.position.assign(this.position);
-            clone.velocity.assign(this.velocity);
             return clone;
         }
     }

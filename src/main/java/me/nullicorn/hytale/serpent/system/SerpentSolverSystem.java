@@ -5,9 +5,13 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
+import com.hypixel.hytale.math.matrix.Matrix4d;
+import com.hypixel.hytale.math.util.MathUtil;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.time.TimeResource;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.nullicorn.hytale.serpent.component.Serpent;
 
@@ -23,7 +27,7 @@ public final class SerpentSolverSystem extends EntityTickingSystem<EntityStore> 
 
     @Override
     public void tick(
-        final float dt,
+        float dt,
         final int index,
         @Nonnull final ArchetypeChunk<EntityStore> archetypeChunk,
         @Nonnull final Store<EntityStore> store,
@@ -36,63 +40,71 @@ public final class SerpentSolverSystem extends EntityTickingSystem<EntityStore> 
             return;
         }
 
-        // Stored so we can check if the neck moved substantially. If it didn't we'll exit early.
-        final Vector3d oldNeckPosition = serpent.joints[1].position.clone();
+        final TimeResource timeResource = store.getResource(TimeResource.getResourceType());
+        final float timeDilationModifier = timeResource.getTimeDilationModifier();
+        final World world = store.getExternalData().getWorld();
+        dt = 1.0F / world.getTps();
+        dt *= timeDilationModifier;
+
+        final Vector3d[] predictions = new Vector3d[serpent.joints.length];
+
+        for (int i = 0; i < serpent.joints.length; i++) {
+            predictions[i] = serpent.joints[i].position.clone();
+        }
 
         final TransformComponent headTransform = archetypeChunk.getComponent(index, TransformComponent.getComponentType());
         final HeadRotation headRotation = archetypeChunk.getComponent(index, HeadRotation.getComponentType());
         if (headTransform != null && headRotation != null) {
             final Vector3d offset = headRotation.getDirection().scale(serpent.getBoneConfig(0).getLength() / 2);
             // Move the first joint to the front of the head.
-            serpent.joints[0].position.assign(headTransform.getPosition().clone().add(offset));
+            predictions[0].assign(headTransform.getPosition().clone().add(offset));
             // Move the second joint to the rear of the head.
-            serpent.joints[1].position.assign(headTransform.getPosition().clone().subtract(offset));
+            predictions[1].assign(headTransform.getPosition().clone().subtract(offset));
         }
 
-        if (serpent.joints[1].position.distanceTo(oldNeckPosition) < 0.00001) {
-            // The neck barely moved, so don't bother moving bones.
-            return;
-        }
+        for (int i = 2; i < predictions.length; i++) {
+            // Get how long this bone is intended to be.
+            final double length = serpent.getBoneConfig(i - 1).getLength();
+            if (length == 0.0) {
+                predictions[i] = predictions[i - 1].clone();
+            } else {
+                if (i < predictions.length - 1) {
+                    final Vector3d prevBoneDir = predictions[i - 1].clone().subtract(predictions[i - 2]).normalize();
+                    final Vector3d thisBoneDir = predictions[i].clone().subtract(predictions[i - 1]).normalize();
+                    final double angleBetween = getAngleBetween(prevBoneDir, thisBoneDir);
+                    final double angleLimit = Math.toRadians(serpent.getConfig().getDefaultSoftAngleLimit());
+                    if (angleBetween > angleLimit) {
+                        // Get the axis we need to rotating around, perpendicular to the plane formed by the bones.
+                        final Vector3d rotationAxis = prevBoneDir.cross(thisBoneDir);
+                        // Joints closer to the head are corrected more instantaneously to make them feel stiffer.
+                        // Joints closer to the tail are corrected gradually over time.
+                        // TODO: Move the time multiplier into `SerpentConfig` (the `* 10` part below).
+                        final double correctionScale = MathUtil.lerp(1.0, Math.min(1.0, dt * 10), (double) i / (predictions.length - 1));
 
-        // Add the new neck position to the front of the path.
-        serpent.path.addFirst(serpent.joints[1].position.clone());
+                        final Matrix4d matrix = new Matrix4d();
+                        matrix.setRotateAxis((angleBetween - angleLimit) * correctionScale, rotationAxis.x, rotationAxis.y, rotationAxis.z);
+                        matrix.multiplyDirection(thisBoneDir);
+                    }
 
-        // FIXME: When bones move backward (when the head backtracks) bones that reach the tail get compressed into its
-        //        position. Implement some form of extrapolation on `path` so that the tail bone can go backward.
-
-        int pathIndex = 0;
-        double remainder = 0.0;
-
-        // `i = 2` because we want to start at the first joint after the neck.
-        for (int i = 2; i < serpent.joints.length; i++) {
-            final double boneLength = serpent.getBoneConfig(i - 1).getLength();
-
-            // Account for how far along the path segment the previous joint left off.
-            double distLeft = remainder + boneLength;
-            for (; pathIndex < serpent.path.size() - 1; pathIndex++) {
-                final Vector3d thisPathNode = serpent.path.get(pathIndex);
-                final Vector3d nextPathNode = serpent.path.get(pathIndex + 1);
-                final Vector3d pathSegment = nextPathNode.clone().subtract(thisPathNode);
-                final double pathSegmentLength = pathSegment.length();
-                // See if the joint should be placed along this path segment.
-                if (pathSegmentLength > distLeft) {
-                    // Normalize `pathSegment`.
-                    final Vector3d pathSegmentDirection = pathSegment.clone().scale(1 / pathSegmentLength);
-                    // Interpolate the joint along the segment.
-                    serpent.joints[i].position.assign(thisPathNode.clone().add(pathSegmentDirection.clone().scale(distLeft)));
-                    // Save how far into the segment we left off so that the next joint can continue from there.
-                    remainder = distLeft;
-                    // Next joint!
-                    break;
+                    predictions[i] = predictions[i - 1].clone().add(thisBoneDir.clone().scale(length));
+                } else {
+                    // Get how long the bone is currently.
+                    final double distance = predictions[i].distanceTo(predictions[i - 1]);
+                    final double correction = length / distance;
+                    // Lerp `predictions[i]` toward `predictions[i-1]` by `correction`.
+                    predictions[i] = Vector3d.lerpUnclamped(predictions[i], predictions[i - 1], 1 - correction);
                 }
-                // Next path segment!
-                distLeft -= pathSegmentLength;
             }
         }
 
-        // Remove path nodes that the tail bone has gone past.
-        if (pathIndex < serpent.path.size() - 2) {
-            serpent.path.subList(pathIndex + 2, serpent.path.size()).clear();
+        for (int i = 0; i < serpent.joints.length; i++) {
+            final Serpent.Joint joint = serpent.joints[i];
+            // `prediction` becomes our new `position`.
+            joint.position.assign(predictions[i].clone());
         }
+    }
+
+    private static double getAngleBetween(final Vector3d v1, final Vector3d v2) {
+        return Math.acos(Math.clamp(v1.dot(v2), -1.0, 1.0));
     }
 }
