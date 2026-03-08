@@ -18,6 +18,15 @@
     "PositionOffset": {
       "Y": 5,
       "Z": 10
+    },
+    "Pitch": {
+      "AngleRange": {
+        "Min": -90,
+        "Max": 90
+      },
+      "TargetNodes": [
+        "Head"
+      ]
     }
   }
 }
