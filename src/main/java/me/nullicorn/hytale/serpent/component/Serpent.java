@@ -50,8 +50,9 @@ public final class Serpent implements Component<EntityStore> {
         .addValidator(Validators.arraySizeRange(2, Integer.MAX_VALUE))
         .add()
         .afterDecode(serpent -> {
-            serpent.config = SerpentConfig.getAssetMap().getAsset(serpent.configAssetId);
-            serpent.resetPath();
+            if (serpent.configAssetId != null) {
+                serpent.config = SerpentConfig.getAssetMap().getAsset(serpent.configAssetId);
+            }
         })
         .build();
 
@@ -61,7 +62,7 @@ public final class Serpent implements Component<EntityStore> {
 
     private SerpentConfig config;
     public Ref<EntityStore>[] bones;
-    public List<Vector3d> path = new ArrayList<>();
+    public List<Vector3d> guideRail = new ArrayList<>();
 
     public static ComponentType<EntityStore, Serpent> getComponentType() {
         return SerpentPlugin.get().getSerpentComponentType();
@@ -89,8 +90,6 @@ public final class Serpent implements Component<EntityStore> {
             this.joints[i] = joint;
         }
         this.bones = new Ref[this.joints.length - 1];
-
-        this.resetPath();
     }
 
     public SerpentConfig getConfig() {
@@ -148,18 +147,7 @@ public final class Serpent implements Component<EntityStore> {
         for (int i = 0; i < this.joints.length; i++) {
             clone.joints[i] = this.joints[i].clone();
         }
-        clone.resetPath();
         return clone;
-    }
-
-    private void resetPath() {
-        if (this.joints == null) {
-            return;
-        }
-        this.path.clear();
-        for (final Joint joint : this.joints) {
-            this.path.add(joint.position.clone());
-        }
     }
 
     public static final class Joint implements Cloneable {
