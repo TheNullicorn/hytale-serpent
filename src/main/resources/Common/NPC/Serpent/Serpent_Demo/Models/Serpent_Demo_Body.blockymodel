@@ -2,7 +2,7 @@
   "nodes": [
     {
       "id": "1",
-      "name": "cube",
+      "name": "Body",
       "position": {"x": 0, "y": 0, "z": 0},
       "orientation": {"x": 0, "y": 0, "z": -0.38268, "w": 0.92388},
       "shape": {
