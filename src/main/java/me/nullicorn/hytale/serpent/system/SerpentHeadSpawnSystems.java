@@ -4,6 +4,8 @@ import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefChangeSystem;
 import com.hypixel.hytale.component.system.RefSystem;
+import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.nullicorn.hytale.serpent.component.Serpent;
 import me.nullicorn.hytale.serpent.component.SerpentBone;
@@ -24,6 +26,10 @@ public final class SerpentHeadSpawnSystems {
         componentAccessor.putComponent(serpentRef, SerpentBone.getComponentType(), new SerpentBone(serpentRef, 0));
         // Update the head bone inside the `Serpent` to have a ref to itself.
         serpent.bones().getFirst().setRef(serpentRef);
+
+        // Add transform components if missing.
+        componentAccessor.ensureAndGetComponent(serpentRef, TransformComponent.getComponentType());
+        componentAccessor.ensureAndGetComponent(serpentRef, HeadRotation.getComponentType());
     }
 
     public static final class SpawnRefSystem extends RefSystem<EntityStore> {
