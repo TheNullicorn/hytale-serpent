@@ -1,1 +1,1 @@
-rootProject.name = "hytale-serpent"
+rootProject.name = "serpentine"

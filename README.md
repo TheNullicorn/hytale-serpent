@@ -1,4 +1,4 @@
-# hytale-serpent
+# Serpentine
 
 ## Development
 

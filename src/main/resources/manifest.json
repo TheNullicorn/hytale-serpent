@@ -1,7 +1,8 @@
 {
     "Group": "Nullicorn",
-    "Name": "Serpent",
+    "Name": "Serpentine",
     "Version": "0.1.0-SNAPSHOT",
+    "Website": "https://github.com/TheNullicorn/serpentine",
     "Authors": [
         {
             "Name": "Nullicorn",
@@ -16,5 +17,5 @@
         "Hytale:NPC": "*"
     },
     "ServerVersion": "2026.03.12-b1f856309",
-    "Main": "me.nullicorn.hytale.serpent.SerpentPlugin"
+    "Main": "me.nullicorn.serpentine.SerpentPlugin"
 }
