@@ -9,7 +9,7 @@ import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.math.vector.Transform;
-import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3dUtil;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -20,6 +20,8 @@ import me.nullicorn.serpentine.solver.DefaultSerpentBoneSolver;
 import me.nullicorn.serpentine.solver.DefaultSerpentJointSolver;
 import me.nullicorn.serpentine.solver.SerpentBoneSolver;
 import me.nullicorn.serpentine.solver.SerpentJointSolver;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -96,19 +98,19 @@ public final class Serpent implements Component<EntityStore> {
 
         final Vector3d jointPosition = new Vector3d(headTransform.getPosition());
         if (headBoneConfig != null) {
-            jointPosition.add(headBoneConfig.length() * headBone.scale() * 0.5);
+            jointPosition.add(0, 0, headBoneConfig.length() * headBone.scale() * 0.5);
         }
 
         this.joints.add(new Joint(jointPosition));
 
         for (int i = 1; i <= bones.size(); i++) {
-            final Vector3d prevJointPosition = jointPosition.clone();
+            final Vector3d prevJointPosition = new Vector3d(jointPosition);
 
             final SerpentLayoutBone layoutBone = bones.get(i - 1);
             final SerpentBoneConfig boneConfig = layoutBone.boneConfig();
             Model.ModelReference modelRef = null;
             if (boneConfig != null) {
-                jointPosition.subtract(0, 0, boneConfig.length() * layoutBone.scale());
+                jointPosition.sub(0, 0, boneConfig.length() * layoutBone.scale());
 
                 final ModelAsset modelAsset = boneConfig.model();
                 if (modelAsset != null) {
@@ -117,7 +119,7 @@ public final class Serpent implements Component<EntityStore> {
             }
 
             this.joints.add(new Joint(jointPosition));
-            this.bones.add(new Bone(modelRef, new Transform(prevJointPosition.add(jointPosition).scale(0.5)), boneConfig != null ? boneConfig.length() : 0.0, layoutBone.scale()));
+            this.bones.add(new Bone(modelRef, new Transform(prevJointPosition.add(jointPosition).div(2)), boneConfig != null ? boneConfig.length() : 0.0, layoutBone.scale()));
         }
 
         this.setJointSolver(new DefaultSerpentJointSolver());
@@ -189,8 +191,8 @@ public final class Serpent implements Component<EntityStore> {
     public static final class Joint {
         private static final BuilderCodec<Joint> CODEC = BuilderCodec.builder(Joint.class, Joint::new)
             .append(
-                new KeyedCodec<>("Position", Vector3d.CODEC, true),
-                (o, s) -> o.position.assign(s),
+                new KeyedCodec<>("Position", Vector3dUtil.CODEC, true),
+                (o, s) -> o.position.set(s),
                 (o) -> o.position
             )
             .addValidator(Validators.nonNull())
@@ -199,8 +201,8 @@ public final class Serpent implements Component<EntityStore> {
 
         private final Vector3d position = new Vector3d();
 
-        private Joint(final Vector3d position) {
-            this.position.assign(position);
+        private Joint(final Vector3dc position) {
+            this.position.set(position);
         }
 
         private Joint() {

@@ -38,6 +38,6 @@ public final class SerpentMorphCommand extends AbstractPlayerCommand {
         // TODO: Almost identical to SerpentMorphCommand. Move this shared code elsewhere.
         final SerpentConfig config = context.get(this.serpentConfigArg);
 
-        store.putComponent(ref, Serpent.getComponentType(), new Serpent(new Transform(playerRef.getTransform().getPosition().clone()), config.layout().chooseBones()));
+        store.putComponent(ref, Serpent.getComponentType(), new Serpent(new Transform(playerRef.getTransform().getPosition()), config.layout().chooseBones()));
     }
 }

@@ -57,10 +57,10 @@ public final class SerpentBoneApplyTransformSystem extends SerpentBoneTickingSys
 
         final TransformComponent transformComponent = archetypeChunk.getComponent(index, TransformComponent.getComponentType());
         if (transformComponent == null) {
-            commandBuffer.addComponent(boneRef, TransformComponent.getComponentType(), new TransformComponent(transform.getPosition().clone(), transform.getRotation().clone()));
+            commandBuffer.addComponent(boneRef, TransformComponent.getComponentType(), new TransformComponent(transform.getPosition(), transform.getRotation()));
         } else if (!transform.equals(transformComponent.getTransform())) {
-            transformComponent.getPosition().assign(transform.getPosition());
-            transformComponent.getRotation().assign(transform.getRotation());
+            transformComponent.setPosition(transform.getPosition());
+            transformComponent.setRotation(transform.getRotation());
         }
     }
 }
