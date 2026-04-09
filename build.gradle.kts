@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.hypixel.hytale:Server:2026.04.02-51731a32a")
+    implementation("com.hypixel.hytale:Server:2026.04.09-7243e82f8")
     implementation("org.joml:joml:1.10.8")
 }
 
