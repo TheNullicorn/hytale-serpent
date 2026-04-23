@@ -16,6 +16,6 @@
     "OptionalDependencies": {
         "Hytale:NPC": "*"
     },
-    "ServerVersion": "2026.04.17-c2d518cc9",
+    "ServerVersion": "2026.04.23-937872667",
     "Main": "me.nullicorn.serpentine.SerpentPlugin"
 }
